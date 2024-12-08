@@ -31,7 +31,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
         with:
-          enablement: true  # Ensure Pages is enabled automatically
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # If needed, use a PAT instead of GITHUB_TOKEN
 
       - name: Build with Jekyll
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
@@ -51,3 +51,7 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+env:
+  ACTIONS_STEP_DEBUG: true  # Enables debugging for detailed logs
+  ACTIONS_RUNNER_DEBUG: true  # Enables debugging for detailed logs
