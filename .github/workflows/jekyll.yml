@@ -31,7 +31,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
         with:
-          enablement: true  # Ensures Pages is enabled automatically
+          enablement: true
 
       - name: Build with Jekyll
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
