@@ -2,7 +2,8 @@ name: Sync Branches with Main
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,40 +12,26 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Main Branch
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Setup Git User
+      - name: Set up Git user
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
 
-      - name: Sync with Dev Branch (Squash Merge)
+      - name: Sync content branch with main
         run: |
-          git checkout main
-          git pull origin main
-          git checkout dev
-          git pull origin dev
-          git merge --squash origin/main || echo "No changes to merge for dev"
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Squash merge changes from main into dev"
-            git push origin dev
-          else
-            echo "No changes to commit for dev"
-          fi
-
-      - name: Sync with Content Branch (Squash Merge)
-        run: |
-          git checkout main
-          git pull origin main
+          git fetch origin main
           git checkout content
-          git pull origin content
-          git merge --squash origin/main || echo "No changes to merge for content"
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Squash merge changes from main into content"
-            git push origin content
-          else
-            echo "No changes to commit for content"
-          fi
+          git reset --hard origin/main
+          git push origin content --force
+
+      - name: Sync dev branch with main
+        run: |
+          git fetch origin main
+          git checkout dev
+          git reset --hard origin/main
+          git push origin dev --force
