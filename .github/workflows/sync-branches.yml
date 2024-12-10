@@ -2,8 +2,7 @@ name: Sync Branches with Main
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: write
@@ -12,26 +11,38 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Main Branch
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Set up Git user
+      - name: Setup Git User
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
 
-      - name: Sync content branch with main
+      - name: Sync with Dev Branch
         run: |
-          git fetch origin main
-          git checkout content
-          git reset --hard origin/main
-          git push origin content --force
-
-      - name: Sync dev branch with main
-        run: |
-          git fetch origin main
           git checkout dev
+          git pull origin dev || echo "No changes to pull for dev"
           git reset --hard origin/main
-          git push origin dev --force
+          git merge --squash origin/main || echo "No changes to merge for dev"
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Squash merge changes from main into dev"
+            git push origin dev || echo "Failed to push dev branch"
+          fi
+          git reset --hard main
+          git push origin dev --force || echo "Failed to force push dev branch"
+
+      - name: Sync with Content Branch
+        run: |
+          git checkout content
+          git pull origin content || echo "No changes to pull for content"
+          git reset --hard origin/main
+          git merge --squash origin/main || echo "No changes to merge for content"
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Squash merge changes from main into content"
+            git push origin content || echo "Failed to push content branch"
+          fi
+          git reset --hard main
+          git push origin content --force || echo "Failed to force push content branch"
